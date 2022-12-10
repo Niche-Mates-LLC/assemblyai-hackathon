@@ -27,9 +27,11 @@ export default function Call({ channelName = "call" }) {
 
   const [users, setUsers] = useState<IAgoraRTCRemoteUser[]>([]);
   const [start, setStart] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>();
   const recorder = useRef<any>();
+  const socket = useRef<WebSocket>();
 
-  const startRecording = useCallback((stream?: MediaStream) => {
+  const startRecording = useCallback(async (stream?: MediaStream) => {
     if (!stream) {
       return;
     }
@@ -38,31 +40,63 @@ export default function Call({ channelName = "call" }) {
       type: "audio",
       mimeType: "audio/webm;codecs=pcm", // endpoint requires 16bit PCM audio
       recorderType: StereoAudioRecorder,
-      timeSlice: 30000, // set 250 ms intervals of data that sends to AAI
+      timeSlice: 500, // set 250 ms intervals of data that sends to AAI
       desiredSampRate: 16000,
       numberOfAudioChannels: 1, // real-time requires only one channel
       bufferSize: 4096,
       audioBitsPerSecond: 128000,
       ondataavailable: (blob: Blob) => {
-        console.log(`Received blob ${blob.size}`);
-        // invokeSaveAsDialog(blob);
+        // console.log(`Received blob ${blob.size}`);
 
         const reader = new FileReader();
         reader.onload = () => {
-          const base64data = reader.result;
+          const base64data = reader.result as string;
 
           // audio data must be sent as a base64 encoded string
-          // if (socket) {
-          //   socket.send(
-          //     JSON.stringify({ audio_data: base64data.split("base64,")[1] })
-          //   );
-          // }
+          if (socket) {
+            socket.current?.send(
+              JSON.stringify({ audio_data: base64data?.split("base64,")[1] })
+            );
+          }
         };
         reader.readAsDataURL(blob);
       },
     });
 
-    recorder.current?.startRecording();
+    const { token } = await (await fetch("/api/token")).json();
+    socket.current = await new WebSocket(
+      `wss://api.assemblyai.com/v2/realtime/ws?sample_rate=16000&token=${token}`
+    );
+    socket.current.onopen = () => recorder.current?.startRecording();
+
+    const texts: any = {};
+    socket.current.onmessage = (message) => {
+      let msg = "";
+      const res = JSON.parse(message.data);
+      texts[res.audio_start] = res.text;
+      const keys = Object.keys(texts);
+      keys.sort((a: any, b: any) => a - b);
+      for (const key of keys) {
+        if (texts[key]) {
+          msg += ` ${texts[key]}`;
+        }
+      }
+      // console.log(message.data);
+      // console.log(msg);
+      setMessage(msg);
+    };
+
+    socket.current.onerror = (event) => {
+      console.error(event);
+      socket.current?.send(JSON.stringify({ terminate_session: true }));
+      socket.current?.close();
+    };
+
+    socket.current.onclose = (event) => {
+      console.log(event);
+      socket.current?.send(JSON.stringify({ terminate_session: true }));
+      socket.current = undefined;
+    };
     // take the stream and start recording it to a file
   }, []);
 
@@ -79,9 +113,9 @@ export default function Call({ channelName = "call" }) {
         if (mediaType === "audio") {
           user.audioTrack?.play();
           if (user.audioTrack) {
-            startRecording(
-              new MediaStream([user.audioTrack.getMediaStreamTrack()])
-            );
+            // startRecording(
+            //   new MediaStream([user.audioTrack.getMediaStreamTrack()])
+            // );
           }
         }
       });
@@ -108,6 +142,7 @@ export default function Call({ channelName = "call" }) {
       if (tracks) {
         await client.publish([tracks[0], tracks[1]]);
         setStart(true);
+        startRecording(new MediaStream([tracks[0].getMediaStreamTrack()]));
       }
     };
 
@@ -116,7 +151,15 @@ export default function Call({ channelName = "call" }) {
     }
   }, [client, start, ready, tracks, startRecording]);
 
-  return start && tracks && <Videos users={users} tracks={tracks} />;
+  return (
+    start &&
+    tracks && (
+      <>
+        <p>{message}</p>
+        <Videos users={users} tracks={tracks} />
+      </>
+    )
+  );
 }
 
 const Videos = (props: {
