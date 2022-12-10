@@ -126,17 +126,22 @@ const Videos = (props: {
   const { users, tracks } = props;
 
   return (
-    <div id="videos">
-      <AgoraVideoPlayer
-        className="h-[400px] w-[400px]"
-        videoTrack={tracks[1]}
-      />
+    <div id="videos" className="relative">
+      <div className="absolute bottom-2 right-[420px] z-20 h-[120px] w-[160px] rounded-lg">
+        <AgoraVideoPlayer
+          className="h-[120px] w-[160px]"
+          videoTrack={tracks[1]}
+        />
+      </div>
       {users.length > 0 &&
         users.map((user) => {
           if (user.videoTrack) {
             return (
               <AgoraVideoPlayer
-                className="h-[400px] w-[400px]"
+                style={{
+                  width: `${window.innerWidth - 450}px`,
+                  height: `${window.innerHeight - 65}px`,
+                }}
                 videoTrack={user.videoTrack}
                 key={user.uid}
               />
