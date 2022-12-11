@@ -61,7 +61,7 @@ export default function Index() {
   };
 
   const updatePersonalityProfile = async (text: string) => {
-    await fetch(
+    return await fetch(
       `https://api.humantic.ai/v1/user-profile/create?apikey=${PERSONALITY_API_KEY}&id=${name}`,
       {
         method: "POST",
@@ -87,14 +87,21 @@ export default function Index() {
   };
 
   useEffect(() => {
-    const interval = setInterval(fetchPersonalityProfile, 10000)
+    const interval = setInterval(fetchPersonalityProfile, 10000);
 
-    return () => clearInterval(interval)
-  }, [])
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <main className="relative h-screen min-h-screen bg-gray-800 p-5">
-      <ClientOnly>{() => <Call />}</ClientOnly>
+      <ClientOnly>
+        {() => (
+          <Call
+            onCreate={createPersonalityProfile}
+            onUpdate={updatePersonalityProfile}
+          />
+        )}
+      </ClientOnly>
       <Sidebar personality={personality} advice={advice} />
     </main>
   );

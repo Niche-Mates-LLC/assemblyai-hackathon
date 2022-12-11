@@ -10,13 +10,22 @@ import {
   createMicrophoneAndCameraTracks,
 } from "agora-rtc-react";
 import { useState, useEffect, useCallback, useRef } from "react";
-import RecordRTC, { invokeSaveAsDialog, StereoAudioRecorder } from "recordrtc";
+import RecordRTC, { StereoAudioRecorder } from "recordrtc";
 
 const appId = "7d83f415c4014ef0ac6b54caad9a5160";
-const token =
-  "007eJxTYKgT1JN2MK2bd/78+8rn9cvf3Nh0u2zBjP1/ntgt0egPb+VTYDBPsTBOMzE0TTYxMDRJTTNITDZLMjVJTkxMsUw0NTQzqO2ZktwQyMjwt7OekZEBAkF8FobkxJwcBgYA+XAiDQ==";
+const agoraToken =
+  "007eJxTYDBgv/5ONXj+yjOrDr9Z3bJzOr+N19yXZ85sm/qpeeufjEtPFBjMUyyM00wMTZNNDAxNUtMMEpPNkkxNkhMTUywTTQ3NDAQ/T01uCGRkuC9nzczIAIEgPgtDcmJODgMDAHyOI0M=";
 
-export default function Call({ channelName = "call" }) {
+interface Props {
+  channelName?: string;
+  onCreate: () => void;
+  onUpdate: (arg0: string) => Promise<void>;
+}
+export default function Call({
+  channelName = "call",
+  onCreate,
+  onUpdate,
+}: Props) {
   const config = { mode: "rtc", codec: "vp8" };
 
   const useClient = createClient(config as ClientConfig);
@@ -28,8 +37,12 @@ export default function Call({ channelName = "call" }) {
   const [users, setUsers] = useState<IAgoraRTCRemoteUser[]>([]);
   const [start, setStart] = useState<boolean>(false);
   const [message, setMessage] = useState<string>();
+  // const [lastFiveSentences, setLastFiveSentences] = useState<string[]>([]);
+  const lastFiveSentences = useRef<string[]>([]);
   const recorder = useRef<any>();
   const socket = useRef<WebSocket>();
+
+  // const lastSentences = useRef<string[]>();
 
   const startRecording = useCallback(async (stream?: MediaStream) => {
     if (!stream) {
@@ -64,15 +77,21 @@ export default function Call({ channelName = "call" }) {
     });
 
     const { token } = await (await fetch("/api/token")).json();
+    console.log("assembly token", token);
     socket.current = await new WebSocket(
       `wss://api.assemblyai.com/v2/realtime/ws?sample_rate=16000&token=${token}`
     );
-    socket.current.onopen = () => recorder.current?.startRecording();
+    socket.current.onopen = async () => {
+      // Create personality Profile
+      await onCreate();
+      // Start recording video
+      recorder.current?.startRecording();
+    };
 
     const texts: any = {};
-    socket.current.onmessage = (message) => {
+    socket.current.onmessage = (socketMessage) => {
       let msg = "";
-      const res = JSON.parse(message.data);
+      const res = JSON.parse(socketMessage.data);
       texts[res.audio_start] = res.text;
       const keys = Object.keys(texts);
       keys.sort((a: any, b: any) => a - b);
@@ -81,7 +100,7 @@ export default function Call({ channelName = "call" }) {
           msg += ` ${texts[key]}`;
         }
       }
-      // console.log(message.data);
+      // console.log(socketMessage.data);
       // console.log(msg);
       setMessage(msg);
     };
@@ -99,6 +118,34 @@ export default function Call({ channelName = "call" }) {
     };
     // take the stream and start recording it to a file
   }, []);
+
+  useEffect(() => {
+    if (!message || message.length <= 100) {
+      return;
+    }
+
+    const lastSentences = message.split(".").slice(-5);
+    console.log("before buffer: ", lastSentences);
+
+    const updatePersonality = async () => {
+      if (lastFiveSentences.current.length >= 5) {
+        onUpdate(lastFiveSentences.current.join(" "));
+      }
+    };
+
+    if (
+      lastSentences.every(
+        (sentence) => !lastFiveSentences.current.includes(sentence)
+      )
+    ) {
+      // setLastFiveSentences(lastSentences);
+      lastFiveSentences.current = lastSentences;
+      console.log("buffer state: ", lastFiveSentences.current);
+      updatePersonality();
+      // setLastFiveSentences([])
+      lastFiveSentences.current = [];
+    }
+  }, [message]);
 
   useEffect(() => {
     // function to initialise the SDK
@@ -138,7 +185,7 @@ export default function Call({ channelName = "call" }) {
         });
       });
 
-      await client.join(appId, name, token, null);
+      await client.join(appId, name, agoraToken, null);
       if (tracks) {
         await client.publish([tracks[0], tracks[1]]);
         setStart(true);
@@ -151,15 +198,12 @@ export default function Call({ channelName = "call" }) {
     }
   }, [client, start, ready, tracks, startRecording]);
 
-  return (
-    start &&
-    tracks && (
-      <>
-        <p>{message}</p>
-        <Videos users={users} tracks={tracks} />
-      </>
-    )
-  );
+  return start && tracks ? (
+    <>
+      <p>{message}</p>
+      <Videos users={users} tracks={tracks} />
+    </>
+  ) : null;
 }
 
 const Videos = (props: {
