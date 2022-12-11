@@ -10,6 +10,7 @@ const PERSONALITY_API_KEY = "chrexec_6d61c717981abc3eb993d3535dca2e7b";
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
   const email = url.searchParams.get("email");
+  const role = url.searchParams.get("role");
 
   const { twitterHandle, linkedinHandle } = await (
     await fetch(`http://localhost:3000/api/profile?email=${email}`)
@@ -19,11 +20,12 @@ export const loader = async ({ request }: LoaderArgs) => {
     name: url.searchParams.get("name"),
     twitterHandle,
     linkedinHandle,
+    role,
   };
 };
 
 export default function Index() {
-  const { name, twitterHandle, linkedinHandle } =
+  const { name, twitterHandle, linkedinHandle, role } =
     useLoaderData<typeof loader>();
   // handles
   console.log(twitterHandle);
@@ -66,35 +68,33 @@ export default function Index() {
   });
 
   const createPersonalityProfile = async () => {
-    await fetch(
-      `https://api.humantic.ai/v1/user-profile/create?apikey=${PERSONALITY_API_KEY}&id=${name}`
-    );
+    // await fetch(
+    //   `https://api.humantic.ai/v1/user-profile/create?apikey=${PERSONALITY_API_KEY}&id=${name}`
+    // );
   };
 
   const updatePersonalityProfile = async (text: string) => {
-    return await fetch(
-      `https://api.humantic.ai/v1/user-profile/create?apikey=${PERSONALITY_API_KEY}&id=${name}`,
-      {
-        method: "POST",
-        body: JSON.stringify({ text }),
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    // return await fetch(
+    //   `https://api.humantic.ai/v1/user-profile/create?apikey=${PERSONALITY_API_KEY}&id=${name}`,
+    //   {
+    //     method: "POST",
+    //     body: JSON.stringify({ text }),
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   }
+    // );
   };
 
   const fetchPersonalityProfile = async () => {
-    const response = await fetch(
-      `https://api.humantic.ai/v1/user-profile?apikey=${PERSONALITY_API_KEY}&id=${name}`
-    );
-
-    const { metadata, results } = await response.json();
-
-    if (metadata.analysis_status === "COMPLETE") {
-      setAdvice(results.persona.sales.communication_advice);
-      setPersonality(results.personality_analysis.summary.disc);
-    }
+    // const response = await fetch(
+    //   `https://api.humantic.ai/v1/user-profile?apikey=${PERSONALITY_API_KEY}&id=${name}`
+    // );
+    // const { metadata, results } = await response.json();
+    // if (metadata.analysis_status === "COMPLETE") {
+    //   setAdvice(results.persona.sales.communication_advice);
+    //   setPersonality(results.personality_analysis.summary.disc);
+    // }
   };
 
   useEffect(() => {
@@ -104,7 +104,7 @@ export default function Index() {
   }, []);
 
   return (
-    <main className="relative h-screen min-h-screen bg-gray-800 p-5">
+    <main className="relative h-screen min-h-screen bg-gray-50 p-5">
       <ClientOnly>
         {() => (
           <Call
@@ -113,7 +113,9 @@ export default function Index() {
           />
         )}
       </ClientOnly>
-      <Sidebar personality={personality} advice={advice} />
+      {role === "operator" && (
+        <Sidebar personality={personality} advice={advice} />
+      )}
     </main>
   );
 }

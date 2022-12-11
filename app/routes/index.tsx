@@ -4,14 +4,14 @@ import { redirect } from "@remix-run/server-runtime";
 
 export default function Index() {
   return (
-    <main className="relative min-h-screen bg-white sm:flex sm:items-center sm:justify-center">
-      <Form className="flex flex-col space-y-2" method="post">
+    <main className="relative flex min-h-screen w-full items-center justify-center bg-white">
+      <Form className="flex w-full flex-col space-y-2 px-2" method="post">
         <label>
           <input
             id="name"
             name="name"
             type="name"
-            className="rounded-xl border border-gray-50 px-4 py-3 text-gray-800"
+            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-800 focus:outline-none"
             placeholder="Your name"
           />
         </label>
@@ -20,12 +20,12 @@ export default function Index() {
             id="email"
             name="email"
             type="email"
-            className="rounded-xl border border-gray-50 px-4 py-3 text-gray-800"
+            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-800 focus:outline-none"
             placeholder="Your email"
           />
         </label>
         <button
-          className="flex items-center justify-center rounded-xl bg-purple-500 py-2 font-bold text-white"
+          className="flex items-center justify-center rounded-xl bg-gray-800 py-2 font-bold text-white"
           type="submit"
         >
           <svg
@@ -34,7 +34,7 @@ export default function Index() {
             viewBox="0 0 24 24"
             stroke-width="1.5"
             stroke="currentColor"
-            className="h-6 w-6 self-start text-purple-300"
+            className="h-6 w-6 self-start text-gray-300"
           >
             <path
               stroke-linecap="round"
