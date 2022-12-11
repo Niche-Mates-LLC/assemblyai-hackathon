@@ -214,7 +214,7 @@ const Videos = (props: {
 
   return (
     <div id="videos" className="relative">
-      <div className="absolute bottom-2 right-[420px] z-20 h-[120px] w-[160px] rounded-lg">
+      <div className="absolute bottom-2 right-[420px] z-20 h-[120px] w-[160px] overflow-hidden rounded-lg">
         <AgoraVideoPlayer
           className="h-[120px] w-[160px]"
           videoTrack={tracks[1]}
@@ -225,6 +225,7 @@ const Videos = (props: {
           if (user.videoTrack) {
             return (
               <AgoraVideoPlayer
+                className="overflow-hidden rounded-2xl"
                 style={{
                   width: `${window.innerWidth - 450}px`,
                   height: `${window.innerHeight - 65}px`,

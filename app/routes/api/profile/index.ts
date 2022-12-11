@@ -23,7 +23,6 @@ export async function loader({ request }: LoaderArgs) {
 
 const getClearbitInfo = async (email: string) => {
   // remove this when you want to get the info for other emails etc.
-
   return {
     person: {
       twitter: {
