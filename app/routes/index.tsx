@@ -4,14 +4,14 @@ import { redirect } from "@remix-run/server-runtime";
 
 export default function Index() {
   return (
-    <main className="relative flex min-h-screen w-full items-center justify-center bg-white">
+    <main className="relative mx-auto flex min-h-screen w-full max-w-lg items-center justify-center bg-white">
       <Form className="flex w-full flex-col space-y-2 px-2" method="post">
         <label>
           <input
             id="name"
             name="name"
             type="name"
-            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-800 focus:outline-none"
+            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-800 ring-gray-500 focus:outline-none focus:ring"
             placeholder="Your name"
           />
         </label>
@@ -20,7 +20,7 @@ export default function Index() {
             id="email"
             name="email"
             type="email"
-            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-800 focus:outline-none"
+            className="w-full rounded-xl border border-gray-200 px-4 py-3 text-gray-800 ring-gray-500 focus:outline-none focus:ring"
             placeholder="Your email"
           />
         </label>
