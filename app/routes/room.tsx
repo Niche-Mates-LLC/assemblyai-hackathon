@@ -9,14 +9,25 @@ const PERSONALITY_API_KEY = "chrexec_6d61c717981abc3eb993d3535dca2e7b";
 
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
+  const email = url.searchParams.get("email");
+
+  const { twitterHandle, linkedinHandle } = await (
+    await fetch(`http://localhost:3000/api/profile?email=${email}`)
+  ).json();
 
   return {
     name: url.searchParams.get("name"),
+    twitterHandle,
+    linkedinHandle,
   };
 };
 
 export default function Index() {
-  const { name } = useLoaderData<typeof loader>();
+  const { name, twitterHandle, linkedinHandle } =
+    useLoaderData<typeof loader>();
+  // handles
+  console.log(twitterHandle);
+  console.log(linkedinHandle);
 
   const [personality, setPersonality] = useState({
     color: "green",
