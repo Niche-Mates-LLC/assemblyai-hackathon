@@ -37,12 +37,9 @@ export default function Call({
   const [users, setUsers] = useState<IAgoraRTCRemoteUser[]>([]);
   const [start, setStart] = useState<boolean>(false);
   const [message, setMessage] = useState<string>();
-  // const [lastFiveSentences, setLastFiveSentences] = useState<string[]>([]);
   const lastFiveSentences = useRef<string[]>([]);
   const recorder = useRef<any>();
   const socket = useRef<WebSocket>();
-
-  // const lastSentences = useRef<string[]>();
 
   const startRecording = useCallback(async (stream?: MediaStream) => {
     if (!stream) {
@@ -125,7 +122,6 @@ export default function Call({
     }
 
     const lastSentences = message.split(".").slice(-5);
-    console.log("before buffer: ", lastSentences);
 
     const updatePersonality = async () => {
       if (lastFiveSentences.current.length >= 5) {
@@ -139,7 +135,6 @@ export default function Call({
       )
     ) {
       lastFiveSentences.current = lastSentences;
-      console.log("buffer state: ", lastFiveSentences.current);
       updatePersonality();
     }
   }, [message]);
@@ -157,9 +152,9 @@ export default function Call({
         if (mediaType === "audio") {
           user.audioTrack?.play();
           if (user.audioTrack) {
-            // startRecording(
-            //   new MediaStream([user.audioTrack.getMediaStreamTrack()])
-            // );
+            startRecording(
+              new MediaStream([user.audioTrack.getMediaStreamTrack()])
+            );
           }
         }
       });
@@ -186,7 +181,7 @@ export default function Call({
       if (tracks) {
         await client.publish([tracks[0], tracks[1]]);
         setStart(true);
-        startRecording(new MediaStream([tracks[0].getMediaStreamTrack()]));
+        // startRecording(new MediaStream([tracks[0].getMediaStreamTrack()]));
       }
     };
 
