@@ -138,12 +138,9 @@ export default function Call({
         (sentence) => !lastFiveSentences.current.includes(sentence)
       )
     ) {
-      // setLastFiveSentences(lastSentences);
       lastFiveSentences.current = lastSentences;
       console.log("buffer state: ", lastFiveSentences.current);
       updatePersonality();
-      // setLastFiveSentences([])
-      lastFiveSentences.current = [];
     }
   }, [message]);
 
@@ -200,7 +197,6 @@ export default function Call({
 
   return start && tracks ? (
     <>
-      <p>{message}</p>
       <Videos users={users} tracks={tracks} />
     </>
   ) : null;

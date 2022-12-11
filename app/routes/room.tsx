@@ -27,18 +27,6 @@ export const loader = async ({ request }: LoaderArgs) => {
 export default function Index() {
   const { name, twitterHandle, linkedinHandle, role } =
     useLoaderData<typeof loader>();
-  // handles
-  console.log(twitterHandle);
-  console.log(linkedinHandle);
-
-  const [personality, setPersonality] = useState({
-    color: "green",
-    archetype: "Commander",
-    group: "dominant",
-    description: ["High Dominance"],
-    label: ["D"],
-  });
-
   const [advice, setAdvice] = useState({
     description: [
       "They like to be in a position where they can control the conversation and terms.",
@@ -66,16 +54,25 @@ export default function Index() {
         "Conviction around the impact matters the most to them, followed by a sense of achievement and ROI.",
     },
   });
+  const [uid] = useState(() => {
+    if (twitterHandle) {
+      return twitterHandle;
+    } else if (linkedinHandle) {
+      return linkedinHandle;
+    } else {
+      return name;
+    }
+  });
 
   const createPersonalityProfile = async () => {
     // await fetch(
-    //   `https://api.humantic.ai/v1/user-profile/create?apikey=${PERSONALITY_API_KEY}&id=${name}`
+    //   `https://api.humantic.ai/v1/user-profile/create?apikey=${PERSONALITY_API_KEY}&id=${uid}`
     // );
   };
 
   const updatePersonalityProfile = async (text: string) => {
-    // return await fetch(
-    //   `https://api.humantic.ai/v1/user-profile/create?apikey=${PERSONALITY_API_KEY}&id=${name}`,
+    // await fetch(
+    //   `https://api.humantic.ai/v1/user-profile/create?apikey=${PERSONALITY_API_KEY}&id=${uid}`,
     //   {
     //     method: "POST",
     //     body: JSON.stringify({ text }),
@@ -88,12 +85,11 @@ export default function Index() {
 
   const fetchPersonalityProfile = async () => {
     // const response = await fetch(
-    //   `https://api.humantic.ai/v1/user-profile?apikey=${PERSONALITY_API_KEY}&id=${name}`
+    //   `https://api.humantic.ai/v1/user-profile?apikey=${PERSONALITY_API_KEY}&id=${uid}`
     // );
     // const { metadata, results } = await response.json();
     // if (metadata.analysis_status === "COMPLETE") {
     //   setAdvice(results.persona.sales.communication_advice);
-    //   setPersonality(results.personality_analysis.summary.disc);
     // }
   };
 
@@ -113,9 +109,7 @@ export default function Index() {
           />
         )}
       </ClientOnly>
-      {role === "operator" && (
-        <Sidebar personality={personality} advice={advice} />
-      )}
+      {role === "operator" && <Sidebar advice={advice} />}
     </main>
   );
 }
