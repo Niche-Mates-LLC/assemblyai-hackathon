@@ -12,9 +12,8 @@ import {
 import { useState, useEffect, useCallback, useRef } from "react";
 import RecordRTC, { StereoAudioRecorder } from "recordrtc";
 
-const appId = "7d83f415c4014ef0ac6b54caad9a5160";
-const agoraToken =
-  "007eJxTYDBgv/5ONXj+yjOrDr9Z3bJzOr+N19yXZ85sm/qpeeufjEtPFBjMUyyM00wMTZNNDAxNUtMMEpPNkkxNkhMTUywTTQ3NDAQ/T01uCGRkuC9nzczIAIEgPgtDcmJODgMDAHyOI0M=";
+const appId = process.env.AGORA_APP_ID;
+const agoraToken = process.env.AGORA_TOKEN;
 
 interface Props {
   channelName?: string;

@@ -5,7 +5,7 @@ import { ClientOnly } from "remix-utils";
 import Call from "~/components/call/index.client";
 import Sidebar from "~/components/sidebar";
 
-const PERSONALITY_API_KEY = "chrexec_6d61c717981abc3eb993d3535dca2e7b";
+const PERSONALITY_API_KEY = process.env.PERSONALITY_API_KEY;
 
 export const loader = async ({ request }: LoaderArgs) => {
   const url = new URL(request.url);
